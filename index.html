@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login Paradise</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌴</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffdbe7;--card:#fff8f2;--ink:#3a0d2b;--muted:#7d4e69;--pink:#ff2f86;--teal:#0e8f7e;--err:#b3123f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "DM Sans",system-ui,sans-serif;display:flex;justify-content:center;padding:24px 16px}
+main{width:100%;max-width:460px}
+h1{font:600 2.3rem/1.1 "Fredoka",system-ui,sans-serif;margin:8px 0 4px}
+h2{font:600 1.25rem "Fredoka",system-ui,sans-serif;margin:0 0 8px}
+.sub{margin:0 0 20px;color:var(--muted)}
+.card{background:var(--card);border:2px solid var(--ink);border-radius:22px;padding:20px;box-shadow:6px 6px 0 var(--ink);margin-bottom:18px}
+.hidden{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+.btn{display:block;width:100%;padding:13px 16px;margin-top:10px;background:#fff;border:2px solid var(--ink);border-radius:14px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;color:var(--ink)}
+.btn:active{transform:translate(2px,2px)}
+.btn.main{background:var(--pink);color:#fff}
+.btn.alt{background:var(--teal);color:#fff}
+.btn:disabled{opacity:.55;cursor:wait}
+.sep{margin:18px 0 6px;color:var(--muted);font-size:.9rem;text-align:center}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input[type=email],input[type=text],textarea,select{width:100%;padding:12px 14px;border:2px solid var(--ink);border-radius:12px;background:#fff}
+textarea{min-height:130px;resize:vertical}
+input.code{text-align:center;font:600 2rem "Fredoka",monospace;letter-spacing:.5em;padding-left:.5em}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.msg{min-height:1.4em;margin:10px 0 0;font-size:.95rem}
+.err{color:var(--err);font-weight:700}
+.ok{color:var(--teal);font-weight:700}
+.link{background:none;border:0;padding:0;margin-top:14px;color:var(--muted);text-decoration:underline;cursor:pointer}
+.badge{display:inline-block;padding:2px 12px;border:2px solid var(--ink);border-radius:99px;font-weight:700;font-size:.9rem;background:#fff}
+.badge.admin{background:var(--pink);color:#fff}.badge.member{background:var(--teal);color:#fff}
+.me{word-break:break-all;font-weight:700;margin:2px 0 8px}
+.row{display:flex;gap:8px;align-items:center;padding:10px 0;border-top:2px solid rgba(58,13,43,.12)}
+.row .who{flex:1;word-break:break-all;font-size:.92rem}
+.row select{width:auto;padding:8px}
+footer{margin:8px 0 24px;text-align:center;color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+<main>
+  <h1>Login Paradise 🌴</h1>
+  <p class="sub" id="sub">Un seul compte pour tout Pink Paradise et Exotic.</p>
+
+  <section class="card" id="v-login">
+    <button class="btn" data-oauth="google">Continuer avec Google</button>
+    <button class="btn" data-oauth="github">Continuer avec GitHub</button>
+    <button class="btn" data-oauth="azure">Continuer avec Microsoft</button>
+    <div class="sep">ou avec un code</div>
+    <label for="email">Ton email</label>
+    <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="toi@exemple.com">
+    <button class="btn main" id="b-mail">Recevoir le code par email</button>
+    <button class="btn alt" id="b-tg">Recevoir le code sur Telegram</button>
+    <p class="msg" id="m-login" role="status"></p>
+  </section>
+
+  <section class="card hidden" id="v-code">
+    <p style="margin:0" id="code-info"></p>
+    <label for="code">Code à 6 chiffres</label>
+    <input id="code" class="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="······">
+    <button class="btn main" id="b-verify">Valider le code</button>
+    <p class="msg" id="m-code" role="status"></p>
+    <button class="link" id="b-back">Changer d'email ou de méthode</button>
+  </section>
+
+  <div id="v-me" class="hidden">
+    <section class="card">
+      <span class="badge" id="role-badge"></span>
+      <p class="me" id="me-email"></p>
+      <p id="guest-msg" class="hidden">Ton compte est créé, mais il n'a pas encore d'accès. Un admin doit te valider pour ouvrir ton espace.</p>
+      <button class="btn alt" id="b-link">Lier mon Telegram</button>
+      <button class="btn" id="b-out">Se déconnecter</button>
+      <p class="msg" id="m-me" role="status"></p>
+    </section>
+
+    <section class="card hidden" id="s-notes">
+      <h2>Mes notes</h2>
+      <textarea id="notes" aria-label="Mes notes" placeholder="Écris ici, c'est privé."></textarea>
+      <button class="btn main" id="b-notes">Enregistrer les notes</button>
+      <p class="msg" id="m-notes" role="status"></p>
+    </section>
+
+    <section class="card hidden" id="s-admin">
+      <h2>Admin Exotic</h2>
+      <div id="admin-links"></div>
+      <h2 style="margin-top:18px">Comptes</h2>
+      <div id="users"></div>
+      <p class="msg" id="m-admin" role="status"></p>
+    </section>
+  </div>
+  <footer>ExoticSecurity - PinkSecurity</footer>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// ====== À REMPLIR ======
+const SUPABASE_URL = "https://TON-PROJET.supabase.co";
+const SUPABASE_ANON_KEY = "TA_CLE_ANON_PUBLIQUE"; // clé anon, PAS la service_role
+const WORKER_URL = "https://loginparadise.vosprojets.workers.dev";
+const ADMIN_LINKS = [
+  { label: "DNS admin", url: "https://exemple.com/dns-admin" },
+  // { label: "Autre outil", url: "https://..." },
+];
+// =======================
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const $ = (id) => document.getElementById(id);
+const views = ["v-login", "v-code", "v-me"];
+const show = (id) => views.forEach((v) => $(v).classList.toggle("hidden", v !== id));
+const say = (id, t, c = "") => { const e = $(id); e.textContent = t; e.className = "msg " + c; };
+const busy = (ids, on) => ids.forEach((b) => ($(b).disabled = on));
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ROLES = { guest: "En attente", member: "Membre Pink Paradise", admin: "Admin Exotic" };
+
+let mode = null, curEmail = "", loadedFor = null;
+
+const getEmail = () => {
+  const v = $("email").value.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { say("m-login", "Entre une adresse email valide.", "err"); return null; }
+  return v;
+};
+const toCode = (m, email) => {
+  mode = m; curEmail = email;
+  $("code-info").textContent = m === "mail" ? "Code envoyé par email à " + email + "." : "Si un Telegram est lié à " + email + ", le code y est envoyé.";
+  $("code").value = ""; say("m-code", ""); show("v-code"); $("code").focus();
+};
+
+document.querySelectorAll("[data-oauth]").forEach((b) => b.addEventListener("click", async () => {
+  const provider = b.dataset.oauth;
+  const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo: location.origin + location.pathname, scopes: provider === "azure" ? "email" : undefined } });
+  if (error) say("m-login", "Connexion impossible : " + error.message, "err");
+}));
+
+$("b-mail").onclick = async () => {
+  const email = getEmail(); if (!email) return;
+  busy(["b-mail", "b-tg"], true); say("m-login", "Envoi en cours…");
+  const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+  busy(["b-mail", "b-tg"], false);
+  if (error) return say("m-login", "Envoi impossible : " + error.message, "err");
+  say("m-login", ""); toCode("mail", email);
+};
+
+$("b-tg").onclick = async () => {
+  const email = getEmail(); if (!email) return;
+  busy(["b-mail", "b-tg"], true); say("m-login", "Envoi en cours…");
+  try {
+    await fetch(WORKER_URL + "/code/send", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email }) });
+    say("m-login", ""); toCode("tg", email);
+  } catch { say("m-login", "Le serveur ne répond pas. Réessaie dans un instant.", "err"); }
+  busy(["b-mail", "b-tg"], false);
+};
+
+$("b-verify").onclick = async () => {
+  const code = $("code").value.replace(/\D/g, "");
+  if (code.length !== 6) return say("m-code", "Le code contient 6 chiffres.", "err");
+  busy(["b-verify"], true); say("m-code", "Vérification…");
+  try {
+    let res;
+    if (mode === "mail") res = await sb.auth.verifyOtp({ email: curEmail, token: code, type: "email" });
+    else {
+      const r = await fetch(WORKER_URL + "/code/verify", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email: curEmail, code }) });
+      const d = await r.json();
+      if (r.status === 429) throw new Error("Trop d'essais. Demande un nouveau code.");
+      if (!r.ok || !d.token_hash) throw new Error("Code incorrect ou expiré.");
+      res = await sb.auth.verifyOtp({ token_hash: d.token_hash, type: "email" });
+    }
+    if (res.error) throw new Error("Code incorrect ou expiré.");
+    say("m-code", "");
+  } catch (e) { say("m-code", e.message, "err"); }
+  busy(["b-verify"], false);
+};
+$("code").addEventListener("keydown", (e) => { if (e.key === "Enter") $("b-verify").click(); });
+$("b-back").onclick = () => { say("m-login", ""); show("v-login"); };
+
+$("b-link").onclick = async () => {
+  const { data } = await sb.auth.getSession(); if (!data.session) return;
+  busy(["b-link"], true); say("m-me", "Création du lien…");
+  try {
+    const r = await fetch(WORKER_URL + "/link/create", { method: "POST", headers: { authorization: "Bearer " + data.session.access_token } });
+    const d = await r.json(); if (!r.ok) throw 0;
+    say("m-me", "Ouvre Telegram et appuie sur Démarrer. Le lien expire dans 10 minutes.", "ok");
+    window.open(d.url, "_blank");
+  } catch { say("m-me", "Impossible de créer le lien. Réessaie.", "err"); }
+  busy(["b-link"], false);
+};
+$("b-out").onclick = () => sb.auth.signOut();
+
+// ---- Espace perso (les accès sont protégés côté base par les règles RLS) ----
+async function loadSpace(session) {
+  const { data: p } = await sb.from("profiles").select("role").eq("id", session.user.id).maybeSingle();
+  const role = p?.role || "guest";
+  $("role-badge").textContent = ROLES[role]; $("role-badge").className = "badge " + role;
+  $("me-email").textContent = session.user.email || session.user.id;
+  $("guest-msg").classList.toggle("hidden", role !== "guest");
+  const isMember = role === "member" || role === "admin";
+  $("s-notes").classList.toggle("hidden", !isMember);
+  $("s-admin").classList.toggle("hidden", role !== "admin");
+  if (isMember) {
+    const { data: n } = await sb.from("notes").select("content").eq("user_id", session.user.id).maybeSingle();
+    $("notes").value = n?.content || "";
+  }
+  if (role === "admin") {
+    $("admin-links").innerHTML = ADMIN_LINKS.map((l) => `<a class="btn" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join("");
+    loadUsers(session.user.id);
+  }
+}
+$("b-notes").onclick = async () => {
+  const { data } = await sb.auth.getSession(); if (!data.session) return;
+  const { error } = await sb.from("notes").upsert({ user_id: data.session.user.id, content: $("notes").value, updated_at: new Date().toISOString() });
+  say("m-notes", error ? "Enregistrement impossible : " + error.message : "Notes enregistrées.", error ? "err" : "ok");
+};
+async function loadUsers(myId) {
+  const { data, error } = await sb.from("profiles").select("id,email,role,telegram_chat_id").order("created_at", { ascending: false });
+  if (error) return say("m-admin", "Liste impossible : " + error.message, "err");
+  $("users").innerHTML = data.map((u) => `<div class="row"><div class="who">${esc(u.email)}${u.telegram_chat_id ? " ✓ Telegram" : ""}</div>
+    <select data-id="${esc(u.id)}" aria-label="Rôle de ${esc(u.email)}" ${u.id === myId ? "disabled" : ""}>
+    ${Object.entries(ROLES).map(([k, v]) => `<option value="${k}" ${u.role === k ? "selected" : ""}>${v}</option>`).join("")}</select></div>`).join("");
+  $("users").querySelectorAll("select").forEach((s) => s.onchange = async () => {
+    const { error } = await sb.from("profiles").update({ role: s.value }).eq("id", s.dataset.id);
+    say("m-admin", error ? "Changement refusé : " + error.message : "Rôle mis à jour.", error ? "err" : "ok");
+  });
+}
+
+const render = (session) => {
+  if (!session) { loadedFor = null; $("sub").textContent = "Un seul compte pour tout Pink Paradise et Exotic."; return show("v-login"); }
+  $("sub").textContent = "Bienvenue dans ton espace.";
+  show("v-me");
+  if (loadedFor !== session.user.id) { loadedFor = session.user.id; loadSpace(session); }
+};
+sb.auth.getSession().then(({ data }) => render(data.session));
+sb.auth.onAuthStateChange((_e, session) => setTimeout(() => render(session), 0));
+</script>
+</body>
+</html>
